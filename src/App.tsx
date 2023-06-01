@@ -21,7 +21,10 @@ type Player = {
 //on the event that player1 loses, player2 should collect the prize pool and become winnerWaiting
 //on the event that player1 wins, player 2 should 
 const App = () => {
-  //player states = WinnerWaiting, PlayerBetting, PlayerRolling, PlayerWatching, loser, 
+  //player states = player1 player2 watching
+  //player 1 will always be rolling
+  //player 2 will always be watching but can become player 1 if p1 loses
+  //can only bet if you are watching
   const [player, setPlayer] = useState<Player | null>(null);
   const [typedName, setTypedName] = useState('');
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -52,7 +55,7 @@ const App = () => {
   } else {
     return (
       <div className="flex-col">
-        <p>Shoot some dice</p>
+        <p>Shoot some dice, {player.name}!</p>
         <div className="flex-row">
           <Players player={player} socket={socket}/>
           <DiceRoller player={player} setPlayer={setPlayer} socket={socket}/>
