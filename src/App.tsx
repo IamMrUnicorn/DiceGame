@@ -6,25 +6,15 @@ import DiceRoller from './components/DiceRoller';
 import PrizePool from './components/PrizePool';
 import PlayerChat from './components/PlayerChat';
 
-type Player = {
+export type Player = {
   name: string;
   state: string;
   wallet: number
 };
 
-//when game starts everyone starts with 1000$ 
-//the first person to place a bet becomes player1, 
-//then the next person to match that bet becomes player2
-//after the money is deducted from each players wallet
-//then player1's state changes to playerRolling
-//depending on what happens in the rolls, player1 will keep winning lose or keep rolling
-//on the event that player1 loses, player2 should collect the prize pool and become winnerWaiting
-//on the event that player1 wins, player 2 should 
+
 const App = () => {
-  //player states = player1 player2 watching
-  //player 1 will always be rolling
-  //player 2 will always be watching but can become player 1 if p1 loses
-  //can only bet if you are watching
+
   const [player, setPlayer] = useState<Player | null>(null);
   const [typedName, setTypedName] = useState('');
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -47,7 +37,7 @@ const App = () => {
       <div>
         <p>Enter your name</p>
         <input type="text" value={typedName} onChange={(e) => setTypedName(e.target.value)}></input>
-        <button type="button" onClick={() => setPlayer({ name: typedName, state: 'PlayerWatching', wallet:1000 })}>
+        <button type="button" onClick={() => setPlayer({ name: typedName, state: 'watching', wallet:1000 })}>
           Enter
         </button>
       </div>
@@ -57,8 +47,8 @@ const App = () => {
       <div className="flex-col">
         <p>Shoot some dice, {player.name}!</p>
         <div className="flex-row">
-          <Players player={player} socket={socket}/>
-          <DiceRoller player={player} setPlayer={setPlayer} socket={socket}/>
+          <Players socket={socket}/>
+          <DiceRoller player={player} socket={socket}/>
           <PrizePool player={player} setPlayer={setPlayer} socket={socket}/>
           <PlayerChat player={player} socket={socket}/>
         </div>

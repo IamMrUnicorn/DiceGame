@@ -1,109 +1,113 @@
 import { useState, useEffect } from 'react';
+import { Player } from '../App';
 
-const PrizePool = ({ player, setPlayer, socket }) => {
+const PrizePool = ({ player, setPlayer, socket }: { player: Player; setPlayer: any; socket: Socket }) => {
   const [typedAmount, setTypedAmount] = useState('');
   const [prizePool, setPrizePool] = useState(0);
   const [brokeAlert, setBrokeAlert] = useState(false);
   const [betPlaced, setBetPlaced] = useState(false);
 
   useEffect(() => {
-    socket.on('bet', (bet: number) => {
-      if (bet === 0) {
-        setPrizePool(0)
-        setBetPlaced(false)
-      } else {
-        setPrizePool((previousVal) => previousVal + bet);
-      }
-    });
+    const resetPoolHandler = () => {
+      setPrizePool(0);
+      setBetPlaced(false);
+    };
 
-    socket.on('winner', (prizePool:number) => {
-      setPlayer((prevVal) => ({
+    const prizePoolHandler = (prize: number) => {
+      setPrizePool(prize);
+    };
+
+    const winnerHandler = (prizePool: number) => {
+      setPlayer((prevVal: Player) => ({
         ...prevVal,
-        state:'player1',
-        wallet: prevVal.wallet + prizePool
-      }))
-    })
+        state: 'player1',
+        wallet: prevVal.wallet + prizePool,
+      }));
+    };
 
-    socket.on('loser', () => {
-      setPlayer((prevVal) => ({
+    const loserHandler = () => {
+      setPlayer((prevVal: Player) => ({
         ...prevVal,
-        state: 'watching'
-      }))
-    })
+        state: 'watching',
+      }));
+    };
 
-    socket.on('prizeMoney', (winningTicket) => {
-      console.log(winningTicket)
+    const prizeMoneyHandler = (winningTicket: { winner: string; prize: number }) => {
+      console.log(winningTicket);
       if (player.name === winningTicket.winner) {
-        console.log('wow i just saved myself 150 bucks!')
-        setPlayer((prevVal) => ({
+        setPlayer((prevVal: Player) => ({
           ...prevVal,
-          wallet: prevVal + winningTicket.prize
-        }))
+          state: 'player1',
+          wallet: prevVal.wallet + winningTicket.prize,
+        }));
+      } else {
+        setPlayer((prevVal: Player) => ({
+          ...prevVal,
+          state: 'watching',
+        }));
       }
-    })
+    };
 
-    socket.on('gameStart', () => {
-      setBetPlaced(true)
-    })
+    const startHandler = () => {
+      setBetPlaced(true);
+    };
+
+    socket.on('reset pool', resetPoolHandler);
+    socket.on('prize pool', prizePoolHandler);
+    socket.on('winner', winnerHandler);
+    socket.on('loser', loserHandler);
+    socket.on('prizeMoney', prizeMoneyHandler);
+    socket.on('start', startHandler);
 
     return () => {
-      socket.off('bet');
+      socket.off('bet', () => {
+        console.log('h');
+      });
+      socket.off('reset pool', resetPoolHandler);
+      socket.off('prize pool', prizePoolHandler);
+      socket.off('winner', winnerHandler);
+      socket.off('loser', loserHandler);
+      socket.off('prizeMoney', prizeMoneyHandler);
+      socket.off('start', startHandler);
     };
-  }, [socket, betPlaced]);
+  }, [socket, player, setPlayer]);
 
   const matchBet = () => {
     if (player.wallet >= prizePool) {
-      setPlayer((prevVal) => ({
+      setPlayer((prevVal: Player) => ({
         ...prevVal,
         state: 'player2',
-        wallet: prevVal.wallet - prizePool
-      }))
-      setBetPlaced(true)
-      socket.emit('bet', prizePool)
-      socket.emit('gameStart')
+        wallet: prevVal.wallet - prizePool,
+      }));
+      setBetPlaced(true);
+      socket.emit('bet', prizePool);
+      socket.emit('start');
     }
-  }
-
-  // const doubleBet = () => {
-  //   if (player.wallet >= (prizePool * 2)) {
-  //     setPlayer((prevVal) => ({
-  //       ...prevVal,
-  //       state:'player1',
-  //       wallet:prevVal.wallet - (prizePool * 2)
-  //     }))
-  //     setBetPlaced(true)
-  //     socket.emit('bet', (prizePool * 2))
-  //     setPrizePool((previousVal) => previousVal * 2)
-  //   }
-  // }
+  };
 
   const handleInitalBet = () => {
     const amount = Number(typedAmount);
 
+    if (amount <= 0) {
+      setTypedAmount('');
+      return;
+    }
+
     if (player.wallet >= amount) {
-      setPlayer((prevPlayer) => ({
+      setPlayer((prevPlayer: Player) => ({
         ...prevPlayer,
         state: 'player1',
-        wallet: prevPlayer.wallet - amount
+        wallet: prevPlayer.wallet - amount,
       }));
 
       socket.emit('bet', amount);
-      setBetPlaced(true)
-      setPrizePool((previousVal) => previousVal + amount)
-
-    } else if (player.wallet > 0 && amount > 0) {
-      socket.emit('bet', player.wallet);
-      setPrizePool((previousVal) => previousVal + amount)
-      setBetPlaced(true)
-      setPlayer((prevPlayer) => ({
-        ...prevPlayer,
-        state: 'player1',
-        wallet: 0
-      }));
+      setBetPlaced(true);
+      setTypedAmount('');
+      return
     } else {
-      setBrokeAlert(true);
+      setTypedAmount('');
+      return
     }
-    setTypedAmount('')
   };
 
   return (
@@ -121,12 +125,11 @@ const PrizePool = ({ player, setPlayer, socket }) => {
               {prizePool === 0 ? (
                 <div>
                   <input type="text" value={typedAmount} onChange={(e) => setTypedAmount(e.target.value)} />
-                  <button onClick={handleInitalBet}>place inital bet</button>
+                  <button onClick={handleInitalBet}>place initial bet</button>
                 </div>
               ) : (
                 <div>
                   <button onClick={matchBet}>match bet</button>
-                  {/* <button onClick={doubleBet}>double bet</button> */}
                 </div>
               )}
             </div>

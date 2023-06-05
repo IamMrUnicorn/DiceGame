@@ -1,48 +1,41 @@
 import {useState, useEffect} from 'react'
+import {Player} from '../App'
 
-const DiceRoller = ({player, setPlayer, socket}) => {
+const DiceRoller = ({player, socket} : { player: Player; socket: Socket }) => {
 
-  const [dice1, setDice1] = useState({
-    value:0,
-    rolled:false
-  })
-  const [dice2, setDice2] = useState({
-    value:0,
-    rolled:false
-  })
+  const [dice1, setDice1] = useState<{ value: number; rolled: boolean }>({ value: 0, rolled: false })
+  const [dice2, setDice2] = useState<{ value: number; rolled: boolean }>({ value: 0, rolled: false })
   const [diceTotal, setDiceTotal] = useState(0)
   const [lastRoll, setLastRoll] = useState(0)
   const [yourNumber, setYourNumber] = useState(0)
-  const [winner, setWinner] = useState(false)
   
-  const resetDice = () => {
-    setLastRoll(diceTotal)
-    setDiceTotal(0)
-    setDice1({
-      value:0,
-      rolled:false
-    })
-    setDice2({
-      value:0,
-      rolled:false
-    })
-    return
-  }
   useEffect(() => {
-    socket.on('yourNumber', (yourNumber) => {
-      setYourNumber(yourNumber)
-    })
+
+    const resetDice = () => {
+      setLastRoll(diceTotal)
+      setDiceTotal(0)
+      setDice1({
+        value:0,
+        rolled:false
+      })
+      setDice2({
+        value:0,
+        rolled:false
+      })
+      return
+    }
     //if this is the first roll
     if ((dice1.rolled && dice2.rolled) && yourNumber === 0) {
       //if that first roll is a 7 or an 11, player wins prize pool
       if (diceTotal === 7 || diceTotal === 11) {
         resetDice()
+        setYourNumber(0)
         socket.emit('winner')
       } else {
         setYourNumber(diceTotal)
         socket.emit('yourNumber', diceTotal)
         resetDice()
-      }
+    }
       //else if this roll is not 7, 11, or yourNumber, reset dice and keep rolling
     } else if ((dice1.rolled && dice2.rolled) && (diceTotal !== yourNumber && diceTotal !== 7 && diceTotal !== 11)) {
       resetDice()
@@ -51,13 +44,15 @@ const DiceRoller = ({player, setPlayer, socket}) => {
       resetDice()
       setYourNumber(0)
       socket.emit('winner')
+      setYourNumber(0)
 
       //else if this roll is 7 or 11, reset the dice, make this player the loser
     } else if ((dice1.rolled && dice2.rolled) && (diceTotal === 7 || diceTotal === 11)) {
       resetDice()
       socket.emit('loser')
+      setYourNumber(0)
     }
-  }, [dice1.rolled, dice2.rolled, diceTotal, yourNumber])
+  }, [dice1.rolled, dice2.rolled, diceTotal, yourNumber, socket])
 
   const rollDice = (option:number) => {
     if (option === 1) {

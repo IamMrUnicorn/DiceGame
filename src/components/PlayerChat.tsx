@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-
-type Player = {
-  name: string;
-  state: string;
-};
+import { Player } from '../App';
 
 /*
     make a king of the hill betting priority que,
@@ -15,18 +11,26 @@ type Player = {
       and the second slot is returne to null
   */
 
-const PlayerChat = ({ player, socket }: { player: Player; socket: any }) => {
+const PlayerChat = ({ player, socket }: { player: Player; socket: Socket }) => {
   const [messages, setMessages] = useState<string[]>([]);
+  const [rolls, setRolls] = useState<string[]>([]);
 
   useEffect(() => {
     const handleChatMessage = (msg: string) => {
       setMessages((prevMessages) => [...prevMessages, msg]);
     };
+    const handleRollMessage = (roll: string) => {
+      console.log(roll)
+      setRolls((prevRolls) => [...prevRolls, roll]);
+    };
 
     socket.on('chat message', handleChatMessage);
+    socket.on('diceRoll', handleRollMessage);
+    socket.on('yourNumber', handleRollMessage);
 
     return () => {
       socket.off('chat message', handleChatMessage);
+      socket.off('diceRoll', handleRollMessage);
     };
   }, [socket]);
 
@@ -40,18 +44,29 @@ const PlayerChat = ({ player, socket }: { player: Player; socket: any }) => {
       input.value = '';
     }
   };
-
   return (
-    <div className="chat">
-      <ul id="messages">
-        {messages.map(({msg}, index) => (
-          <li key={index}>{msg}</li>
-        ))}
-      </ul>
-      <form id="form" onSubmit={handleSubmit}>
-        <input id="input" autoComplete="off" />
-        <button type="submit">Send</button>
-      </form>
+    <div>
+      <div className="chat">
+        <p>chat</p>
+        <ul id="messages">
+          {messages.map(({msg}, index) => (
+            <li key={index}>{msg}</li>
+          ))}
+        </ul>
+        <form id="form" onSubmit={handleSubmit}>
+          <input id="input" autoComplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+      
+      <p>rolls</p>
+      <div className="roll-chat">
+        <ul id="rolls">
+          {rolls.map((roll, index) => (
+            <li key={index}>{roll}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
