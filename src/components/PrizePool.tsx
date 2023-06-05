@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Player } from '../App';
 
-const PrizePool = ({ player, setPlayer, socket }: { player: Player; setPlayer: any; socket: Socket }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PrizePool = ({ player, setPlayer, socket }: { player: Player; setPlayer: any; socket: any }) => {
   const [typedAmount, setTypedAmount] = useState('');
   const [prizePool, setPrizePool] = useState(0);
-  const [brokeAlert, setBrokeAlert] = useState(false);
   const [betPlaced, setBetPlaced] = useState(false);
 
   useEffect(() => {
@@ -118,20 +118,14 @@ const PrizePool = ({ player, setPlayer, socket }: { player: Player; setPlayer: a
         <p>bet placed already or game started</p>
       ) : (
         <div>
-          {brokeAlert ? (
-            <p>YOU ARE OUT OF MONEY</p>
+          {prizePool === 0 ? (
+            <div>
+              <input type="text" value={typedAmount} onChange={(e) => setTypedAmount(e.target.value)} />
+              <button onClick={handleInitalBet}>place initial bet</button>
+            </div>
           ) : (
             <div>
-              {prizePool === 0 ? (
-                <div>
-                  <input type="text" value={typedAmount} onChange={(e) => setTypedAmount(e.target.value)} />
-                  <button onClick={handleInitalBet}>place initial bet</button>
-                </div>
-              ) : (
-                <div>
-                  <button onClick={matchBet}>match bet</button>
-                </div>
-              )}
+              <button onClick={matchBet}>match bet</button>
             </div>
           )}
         </div>

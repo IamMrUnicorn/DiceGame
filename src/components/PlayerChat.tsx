@@ -10,8 +10,8 @@ import { Player } from '../App';
       and the second player rises to the first slot 
       and the second slot is returne to null
   */
-
-const PlayerChat = ({ player, socket }: { player: Player; socket: Socket }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PlayerChat = ({ player, socket }: { player: Player; socket: any }) => {
   const [messages, setMessages] = useState<string[]>([]);
   const [rolls, setRolls] = useState<string[]>([]);
 
@@ -49,8 +49,8 @@ const PlayerChat = ({ player, socket }: { player: Player; socket: Socket }) => {
       <div className="chat">
         <p>chat</p>
         <ul id="messages">
-          {messages.map(({msg}, index) => (
-            <li key={index}>{msg}</li>
+          {messages.map((message, index) => (
+            <li key={index}>{message}</li>
           ))}
         </ul>
         <form id="form" onSubmit={handleSubmit}>
@@ -72,3 +72,5 @@ const PlayerChat = ({ player, socket }: { player: Player; socket: Socket }) => {
 };
 
 export default PlayerChat;
+
+

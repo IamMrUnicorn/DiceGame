@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react'
 import {Player} from '../App'
-
-const DiceRoller = ({player, socket} : { player: Player; socket: Socket }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DiceRoller = ({player, socket} : { player: Player; socket: any }) => {
 
   const [dice1, setDice1] = useState<{ value: number; rolled: boolean }>({ value: 0, rolled: false })
   const [dice2, setDice2] = useState<{ value: number; rolled: boolean }>({ value: 0, rolled: false })
